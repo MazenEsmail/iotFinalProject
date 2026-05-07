@@ -1,0 +1,167 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+:root {
+  --red: #e84040;
+  --red-glow: rgba(232, 64, 64, 0.45);
+  --yellow: #f0b429;
+  --yellow-glow: rgba(240, 180, 41, 0.45);
+  --green: #3cb97a;
+  --green-glow: rgba(60, 185, 122, 0.45);
+  --led-off: #ccc; /* Gray color for LED off state */
+  --led-off-border: #999; /* Border color for LED off */
+  --red-on: var(--red);
+  --yellow-on: var(--yellow);
+  --green-on: var(--green);
+}
+body {
+  height: 100vh;
+  font-family: Arial;
+  text-align: center;
+  background-image: url("img/1.jpg");
+  background-size: cover;
+  background-attachment: fixed;
+  color: #fff;
+}
+header {
+  width: 100%;
+  height: 20%;
+  padding: 20px;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 20px;
+}
+
+a {
+  padding: 20px;
+  margin: 5px;
+  border: 1px solid #fff;
+  border-radius: 5px;
+  color: #fff;
+  cursor: pointer;
+  transition: ease-in-out 0.3s;
+
+}
+#logo {
+  border: none;
+}
+.logo {
+  width: 200px;
+}
+
+.card a:hover {
+  background-color: #fff;
+  color: #000;
+}
+.mode-card a {
+  padding: 10px;
+}
+.mode-card a:hover {
+  background-color: #fff;
+  color: #000;
+}
+main {
+  padding: 20px;
+  width: 100%;
+  height: auto;
+  display: flex;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+section {
+  height: 600px;
+  display: grid;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.controlers {
+  width: 30%;
+  align-items: center;
+}
+.sensors {
+  width: 70%;
+}
+.card {
+  margin: 15px;
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  color: #000;
+  display: grid;
+  justify-content: center;
+  padding: 10px;
+}
+.sensor-card {
+  color: #fff;
+}
+.chart-card {
+  align-items: center;
+}
+canvas {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 800px;
+  border-radius: 10px;
+}
+.mode-card {
+  width: 50%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: space-around;
+  padding: 10px;
+}
+.led-item {
+  width: 100%;
+  height: 100%;
+  background-color: var(--primary-color);
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+}
+.ledInfo {
+  display: grid;
+  place-items: center;
+  gap: 20px;
+}
+.led-name {
+  font-size: 1.5em;
+  color: #fff;
+}
+.led-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--led-off);
+  border: 1.5px solid var(--led-off-border);
+  transition:
+    background 0.35s ease,
+    box-shadow 0.35s ease,
+    border-color 0.35s ease;
+}
+.led-circle.on-red {
+  background: var(--red-on);
+  box-shadow:
+    0 0 0 6px var(--red-glow),
+    0 0 0 12px rgba(232, 64, 64, 0.15);
+  border-color: var(--red-on);
+}
+.led-circle.on-yellow {
+  background: var(--yellow-on);
+  box-shadow:
+    0 0 0 6px var(--yellow-glow),
+    0 0 0 12px rgba(240, 180, 41, 0.15);
+  border-color: var(--yellow-on);
+}
+.led-circle.on-green {
+  background: var(--green-on);
+  box-shadow:
+    0 0 0 6px var(--green-glow),
+    0 0 0 12px rgba(60, 185, 122, 0.15);
+  border-color: var(--green-on);
+}
+

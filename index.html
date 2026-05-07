@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Irrigation</title>
+    <link rel="stylesheet" href="style.css" />
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <title>Document</title>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <a href="#" id="logo"
+          ><img
+            class="logo"
+            src="img/logo.png"
+            alt="smart irrigation logo"
+            loading="lazy"
+        /></a>
+        <div class="mode-card">
+          <a onclick="send('irrigation/mode', 'AUTO')">AUTO</a>
+          <a onclick="send('irrigation/mode', 'MANUAL')">MANUAL</a>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <section class="controlers">
+        <div class="card">
+          <a onclick="send('irrigation/pump', 'ON')">PUMP ON</a>
+          <a onclick="send('irrigation/pump', 'OFF')">PUMP OFF</a>
+        </div>
+        <div class="card sensor-card">
+          <h3>Sensor Readings</h3>
+          <p>Soil: <span id="soil">--</span></p>
+          <p>Temp: <span id="temp">--</span></p>
+          <p>Humidity: <span id="hum">--</span></p>
+        </div>
+        <div class="card">
+          <div class="led-item">
+            <div class="led-circle" id="led-green"></div>
+            <div class="ledInfo">
+              <div class="led-name">VERY WET</div>
+            </div>
+          </div>
+          <div class="led-item">
+            <div class="led-circle" id="led-yellow"></div>
+            <div class="ledInfo">
+              <div class="led-name">MEDIUM</div>
+            </div>
+          </div>
+          <div class="led-item">
+            <div class="led-circle" id="led-red"></div>
+            <div class="ledInfo">
+              <div class="led-name">DRY</div>
+            </div>
+          </div>
+        </div>
+        <div class="alertBox"></div>
+      </section>
+
+      <section class="sensors">
+        <!-- 🔥 CHART -->
+        <div class="card chart-card">
+          <canvas id="soilChart"></canvas>
+        </div>
+      </section>
+    </main>
+
+    <!-- MQTT -->
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+    <script src="main.js"></script>
+  </body>
+</html>

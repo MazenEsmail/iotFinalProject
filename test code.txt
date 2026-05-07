@@ -1,0 +1,190 @@
+for led :
+
+#define LED_PIN D6 // Define LED pin
+
+void setup() {
+Serial.begin(9600); // Start serial monitor
+pinMode(LED_PIN, OUTPUT); // Initialize the pin D6 as an output
+}
+
+void loop() {
+  digitalWrite(LED_PIN, HIGH); // Turn on LED
+  digitalWrite(LED_PIN, LOW); // Turn off LED
+}
+
+
+for DHT11 :
+
+#include <DHT.h>
+
+#define DHT_PIN D5
+#define DHTTYPE DHT11
+
+DHT dht(DHT_PIN, DHTTYPE);
+
+void setup() {
+  Serial.begin(9600);
+  dht.begin();
+}
+
+void loop() {
+  delay(2000);
+
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+
+  if (isnan(h) || isnan(t)) {
+    Serial.println("Failed to read from DHT sensor.");
+    return;
+  }
+
+  Serial.print("Temperature: ");
+  Serial.print(t);
+  Serial.print(" °C  ");
+
+  Serial.print("Humidity: ");
+  Serial.print(h);
+  Serial.println(" %");
+}
+
+for soil Moisture sensor :
+
+int soilPin = A0;
+
+void setup() {
+  Serial.begin(115200);
+}
+
+void loop() {
+  int soilValue = analogRead(soilPin);
+  Serial.print("Soil Moisture: ");
+  Serial.println(soilValue);
+  delay(1000);
+}
+
+for relay module and water pump :
+
+#define RELAY_PIN D5   // change if you use another pin
+
+void setup() {
+  pinMode(RELAY_PIN, OUTPUT);
+
+  // Most relay modules are ACTIVE LOW
+  digitalWrite(RELAY_PIN, HIGH); // OFF at start
+}
+
+void loop() {
+  // Turn pump ON
+  digitalWrite(RELAY_PIN, LOW);
+  delay(2000);
+
+  // Turn pump OFF
+  digitalWrite(RELAY_PIN, HIGH);
+  delay(2000);
+}
+
+------------------------------------------------------------------------------------------------------------------------
+soil moisture sensor reading :
+0–300 = تربة مبللة جدًا
+300–700 = رطوبة متوسطة
+700–1023 = جافة
+---------------------------------------------------------------------------------------------------------------------
+
+first simple code for all system :
+#include <DHT.h>
+
+// ---------- PINS ----------
+#define SOIL_SENSOR A0
+#define RELAY_PIN D1
+
+#define DHTPIN D2
+#define DHTTYPE DHT11
+
+#define GREEN_LED D5
+#define YELLOW_LED D6
+#define RED_LED D7
+
+DHT dht(DHTPIN, DHTTYPE);
+
+void setup() {
+  Serial.begin(9600);
+
+  pinMode(RELAY_PIN, OUTPUT);
+  pinMode(GREEN_LED, OUTPUT);
+  pinMode(YELLOW_LED, OUTPUT);
+  pinMode(RED_LED, OUTPUT);
+
+  digitalWrite(RELAY_PIN, LOW); // pump OFF
+
+  dht.begin();
+
+  Serial.println("Smart Irrigation System Started...");
+}
+
+void loop() {
+
+  int soilValue = analogRead(SOIL_SENSOR);
+
+  Serial.print("Soil Moisture: ");
+  Serial.println(soilValue);
+
+  float humidity = dht.readHumidity();
+  float temperature = dht.readTemperature();
+
+  if (!isnan(humidity) && !isnan(temperature)) {
+    Serial.print("Temp: ");
+    Serial.print(temperature);
+    Serial.println(" C");
+
+    Serial.print("Humidity: ");
+    Serial.print(humidity);
+    Serial.println(" %");
+  } else {
+    Serial.println("DHT11 Error!");
+  }
+
+  // ---------- LOGIC ----------
+
+  if (soilValue > 700) {
+    // 🌵 DRY
+    Serial.println("Status: DRY");
+
+    digitalWrite(RELAY_PIN, HIGH); // ✅ pump ON
+    delay(2000);                  // ✅ wait 2 sec
+    digitalWrite(RELAY_PIN, LOW); // ✅ pump OFF
+
+    digitalWrite(RED_LED, HIGH);
+    digitalWrite(YELLOW_LED, LOW);
+    digitalWrite(GREEN_LED, LOW);
+  }
+
+  else if (soilValue > 300) {
+    // 🌤 MEDIUM
+    Serial.println("Status: MEDIUM");
+
+    digitalWrite(RELAY_PIN, LOW); // pump OFF
+
+    digitalWrite(RED_LED, LOW);
+    digitalWrite(YELLOW_LED, HIGH);
+    digitalWrite(GREEN_LED, LOW);
+  }
+
+  else {
+    // 🌱 VERY WET
+    Serial.println("Status: VERY WET");
+
+    digitalWrite(RELAY_PIN, LOW); // pump OFF
+
+    digitalWrite(RED_LED, LOW);
+    digitalWrite(YELLOW_LED, LOW);
+    digitalWrite(GREEN_LED, HIGH);
+  }
+
+  Serial.println("----------------------");
+
+  delay(2000);
+}
+------------------------------------------------------------------------------------------------------------------------
+colors :
+main_color = #13585c
+sec_color = #66a4ab
