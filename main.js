@@ -1,15 +1,22 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+
 import {
   getDatabase,
   ref,
-  push,
   update,
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+
+// ---------- SYSTEM STATE ----------
 let mode = "auto"; // auto | manual
 let pumpStatus = "off"; // on | off
+
 let currentTemp = null;
 let currentHum = null;
 let currentSoil = null;
+
+// ---------- CHART DELAY VARIABLES ----------
+let latestSoilValue = null;
+let latestSoilTime = null;
 
 // ---------- MQTT ----------
 const client = mqtt.connect("wss://broker.hivemq.com:8884/mqtt");
@@ -24,10 +31,7 @@ const RCircle = document.getElementById("led-red");
 const YCircle = document.getElementById("led-yellow");
 const GCircle = document.getElementById("led-green");
 
-// ---------- SETTINGS ----------
-const DRY_THRESHOLD = 700;
-
-// ---------- CHART DATA ----------
+// ---------- CHART ----------
 const chartCanvas = document.getElementById("soilChart");
 
 let soilChart = null;
@@ -55,6 +59,7 @@ if (chartCanvas) {
 
   soilChart = new Chart(ctx, {
     type: "line",
+
     data: chartData,
 
     options: {
@@ -124,14 +129,18 @@ client.on("message", (topic, message) => {
   // ---------- MODE ----------
   if (topic === "irrigation/mode") {
     mode = msg;
+
     console.log("Mode:", mode);
+
     updateFirebase();
   }
 
   // ---------- PUMP ----------
   if (topic === "irrigation/pump") {
     pumpStatus = msg;
+
     console.log("Pump:", pumpStatus);
+
     updateFirebase();
   }
 
@@ -143,51 +152,37 @@ client.on("message", (topic, message) => {
 
     currentSoil = soil;
 
-    // update value
+    // ---------- UPDATE TEXT ----------
     if (soilEl) {
       soilEl.innerText = soil;
     }
 
+    // ---------- SAVE FOR CHART ----------
+    latestSoilValue = soil;
+    latestSoilTime = new Date().toLocaleTimeString();
+
     // ---------- LED CONTROL ----------
     if (RCircle && YCircle && GCircle) {
-      // remove active classes
+
       RCircle.classList.remove("on-red");
       YCircle.classList.remove("on-yellow");
       GCircle.classList.remove("on-green");
 
-      // add correct LED
       if (soil > 700) {
         RCircle.classList.add("on-red");
+
       } else if (soil > 500) {
         YCircle.classList.add("on-yellow");
+
       } else {
         GCircle.classList.add("on-green");
-      }
-    }
-
-    // ---------- UPDATE CHART DIRECTLY ----------
-    if (soilChart) {
-      const currentTime = new Date().toLocaleTimeString();
-
-      chartData.labels.push(currentTime);
-      chartData.datasets[0].data.push(soil);
-
-      if (chartData.labels.length > 20) {
-        chartData.labels.shift();
-        chartData.datasets[0].data.shift();
-      }
-
-      if (mode === "manual") {
-        return;
-      } else {
-        soilChart.update();
       }
     }
 
     updateFirebase();
   }
 
-  // ---------- TEMP ----------
+  // ---------- TEMPERATURE ----------
   if (topic === "irrigation/temp") {
     currentTemp = parseFloat(msg);
 
@@ -210,18 +205,44 @@ client.on("message", (topic, message) => {
   }
 });
 
+// ---------- CHART UPDATE EVERY 10 SECONDS ----------
+setInterval(() => {
+
+  if (!soilChart) return;
+
+  if (mode === "manual") return;
+
+  if (latestSoilValue === null) return;
+
+  chartData.labels.push(latestSoilTime);
+  chartData.datasets[0].data.push(latestSoilValue);
+
+  // keep only last 20 points
+  if (chartData.labels.length > 20) {
+    chartData.labels.shift();
+    chartData.datasets[0].data.shift();
+  }
+
+  soilChart.update();
+
+}, 10000);
+
 // ---------- SEND MQTT ----------
 function send(topic, msg) {
+
   if (client.connected) {
+
     client.publish(topic, msg);
+
     console.log("Sent:", topic, msg);
+
   } else {
+
     console.log("MQTT Not Connected");
   }
 }
 
-//----------- FIREBASE ----------
-
+// ---------- FIREBASE ----------
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
   authDomain: "iot-lab-7fd31.firebaseapp.com",
@@ -233,11 +254,14 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+
 const db = getDatabase(app);
 
-// reference node in database
 const sensorRef = ref(db, "sensorData");
+
+// ---------- UPDATE FIREBASE ----------
 function updateFirebase() {
+
   update(sensorRef, {
     soil: Number(currentSoil),
     temp: Number(currentTemp),
@@ -247,4 +271,6 @@ function updateFirebase() {
     timestamp: Date.now(),
   });
 }
+
+// ---------- GLOBAL ----------
 window.send = send;
